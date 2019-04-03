@@ -1,0 +1,1 @@
+bot_id = 'fashion_on_ray'
