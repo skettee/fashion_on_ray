@@ -1,5 +1,56 @@
+#
+# 모아보기(moaBogey) 데이터베이스 라이브러리
+# 수정 금지!
+#
 import sqlite3 
 from datetime import datetime
+from IPython.core.display import display, HTML
+
+build_html = \
+'''
+<style>
+  .card {{
+    /* Add shadows to create the "card" effect */
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    transition: 0.3s;
+    width: 340px;
+  }}
+  .container {{
+    padding: 2px 16px;
+  }}
+  .center {{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }}
+  hr {{ 
+    display: block;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+    margin-left: auto;
+    margin-right: 100px;
+    border-style: inset;
+    border-width: 1px;
+  }} 
+  img {{
+  	width: 320px;
+  	object-fit: cover;
+  }}
+  h5 {{
+  	color: blue;
+  }}
+</style>
+<div class="card">
+  <img src={0} alt="Image" class="center">
+  <div class="container">
+    <h5><b>{1}</b></h5> 
+    <h6>{2}</h6> 
+    <hr>
+    <p>{3}</p>
+    <p> By {4} </p>
+  </div>
+</div>
+'''
 
 # Dbase class for sqlite
 class Dbase():
@@ -22,7 +73,7 @@ class Dbase():
 
         try:
             self.conn = sqlite3.connect(self.db_name)
-        except Error as e:
+        except sqlite3.Error as e:
             print(e)
 
         with self.conn:
@@ -88,6 +139,14 @@ class Dbase():
                 return False
             else:
                 return True
+    
+    def displayHTML(self):
+        # display db items using html
+        with self.conn:
+            query = 'SELECT * FROM {} ORDER BY timeStamp ASC'.format(self.table_name)
+            curs = self.conn.cursor()
+            for item in curs.execute(query):
+                display(HTML(build_html.format(item[4], item[5], item[1], item[2], item[7])))
 
     def close(self):
         # Commit and close database

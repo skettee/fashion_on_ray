@@ -1,3 +1,7 @@
+#
+# 패션 on Ray Web 
+#
+#%%
 import requests
 from requests.exceptions import HTTPError
 from bs4 import BeautifulSoup
@@ -6,17 +10,21 @@ import json
 from datetime import datetime
 from datetime import timedelta
 
-# moabot 컴포넌트를 가져온다.
-import moabot_database as moabot
-from moabot_id import *
+if __debug__:
+    import os.path
+
+# 모아보기 컴포넌트를 가져온다.
+import moabogey_database as moabogey
+from moabogey_id import *
 
 # 사이트 이름
 site_name = 'ray'
-# 사이트에서 가져올 내용
-section_name = 'fashion'
+# 사이트에서 가져올 주제
+subject_name = 'fashion'
 # 사이트 주소
 site_url = 'https://ray-web.jp/fashion'
-print('site url is: ', site_url)
+if __debug__:
+    print('{} 데이터 수집 중...'.format(site_url))
 
 # 사이트의 HTML을 가져온다.
 try:
@@ -35,20 +43,18 @@ else:
     # BeautifulSoup 오브젝트를 생성한다.
     soup = BeautifulSoup(html_source, 'html.parser')
     
-    # 디버그를 위해서 page의 소스를 파일로 저장한다.
-    # 봇으로 등록하기 위해서는 주석처리를 해야한다.
-    #import os.path
-    #file_name = site_name + '_requests.html'
-    #if not os.path.isfile(file_name):
-    #    print('file save: ', file_name)
-    #    with open(file_name, 'w') as f:
-    #        f.write(soup.prettify())
-    
-    # 데이터를 저장할 데이터베이스를 연다. 
-    # bot_id는 moabot_id에서 가져오는 변수값이다.
-    # 프로그램을 종료하기 전에 데이터 베이스를 닫아야 한다.
-    db_name = section_name + '_on_' + site_name 
-    my_db = moabot.Dbase(db_name, bot_id)
+    # HTML을 분석하기 위해서 페이지의 소스를 파일로 저장한다.
+    if __debug__:
+        file_name = site_name + '_source.html'
+        if not os.path.isfile(file_name):
+            print('file save: ', file_name)
+            with open(file_name, 'w', encoding='utf-8') as f:
+                f.write(soup.prettify())
+       
+    # 데이터를 저장할 데이터베이스를 생성한다. 
+    # bot_id는 moabogey_id에서 가져온 값이다.
+    db_name = subject_name + '_on_' + site_name 
+    my_db = moabogey.Dbase(db_name, bot_id)
     
     soup = soup.find('ul', class_='topic_list')
     # 반복해서 리스트의 목록을 하나씩 검색하고 데이터를 수집한다.
@@ -81,27 +87,31 @@ else:
                 print(f'Other error occurred: {err}')
         else:
             subhtml_source = response.text
-            subsoap = BeautifulSoup(subhtml_source, 'html.parser')
-            #with open(f'{site_name}_section_request.html', 'w') as f:
-            #    f.write(subsoap.prettify())
-            #break
-            
+            post = BeautifulSoup(subhtml_source, 'html.parser')
+            # HTML을 분석하기 위해서 포스트의 소스를 파일로 저장한다.
+            if __debug__:
+                file_name = site_name + '_post_source.html'
+                if not os.path.isfile(file_name):
+                    print('file save: ', file_name)
+                    with open(file_name, 'w', encoding='utf-8') as f:
+                        f.write(post.prettify())
+
             # 3. 이미지
-            moa_image = subsoap.find('meta', property="og:image")
+            moa_image = post.find('meta', property="og:image")
             if moa_image:
                 moa_image = moa_image['content']
             # 4. 사이트 이름
-            moa_site_name = subsoap.find('meta', property="og:site_name")
+            moa_site_name = post.find('meta', property="og:site_name")
             if moa_site_name:
                 moa_site_name = moa_site_name['content']
             # 6. URL
-            moa_url = subsoap.find('meta', property="og:url")
+            moa_url = post.find('meta', property="og:url")
             if moa_url:
                 moa_url = moa_url['content']
             # 8. 현재 날짜와 시간을 수집한다.
             moa_timeStamp = datetime.now()
             # 9. 만든사람 정보를 수집한다.
-            for item in subsoap.find('div', class_='post_cont').find_all('p'):
+            for item in post.find('div', class_='post_cont').find_all('p'):
                 if item.text.find('撮影') != -1:
                     moa_createdBy = item.text.strip()
                     break
@@ -127,16 +137,23 @@ else:
                     'timeStamp': moa_timeStamp
                 }
 
-                # 디버그를 위해서 수집한 데이터를 출력한다.
-                temp_data = db_data.copy()
-                print(json.dumps(temp_data, indent=4, ensure_ascii=False, default=str))
+                if __debug__:
+                    # 디버그를 위해서 수집한 데이터를 출력한다.
+                    temp_data = db_data.copy()
+                    #temp_data['desc'] = temp_data['desc'][:20] + '...'
+                    print('collected json data: ')
+                    print(json.dumps(temp_data, indent=4, ensure_ascii=False, default=str))
 
                 # 수집한 데이터를 데이터베이스에 전송한다.
                 my_db.insertTable(db_data) 
 
-                # one stop break
+                # 수집이 완료되면 루프를 종료한다.
                 break
                 
+    # 데이터 베이스에 저장된 데이터를 디스플레이 한다.
+    if __debug__:
+        my_db.displayHTML()
+
     # 데이터 베이스를 닫는다.
     my_db.close()
         
