@@ -10,43 +10,43 @@ build_html = \
 '''
 <style>
   .card {{
-    /* Add shadows to create the "card" effect */
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-    transition: 0.3s;
     width: 340px;
-  }}
-  .container {{
-    padding: 2px 16px;
+    padding-bottom: 20px;
+    border: 1px solid #DDDDDD;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }}
   .center {{
     display: block;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
   }}
+  .card_item {{
+    width: 340px;
+    padding: 5px 10px;
+  }}
   hr {{ 
-    display: block;
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
+    display: flex;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
     margin-left: auto;
     margin-right: 100px;
     border-style: inset;
     border-width: 1px;
   }} 
-  img {{
-  	width: 320px;
-  	object-fit: cover;
-  }}
   h5 {{
   	color: blue;
   }}
 </style>
 <div class="card">
   <img src={0} alt="Image" class="center">
-  <div class="container">
-    <h5><b>{1}</b></h5> 
-    <h6>{2}</h6> 
+  <div class="card_item">
+    <h5>{1}</h5>
+    <h4><b>{2}</b></h4> 
     <hr>
-    <p>{3}</p>
     <p> By {4} </p>
   </div>
 </div>
