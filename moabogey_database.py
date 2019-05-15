@@ -11,7 +11,7 @@ build_html = \
 <style>
   .card {{
     width: 340px;
-    padding-bottom: 20px;
+    margin-bottom: 20px;
     border: 1px solid #DDDDDD;
     border-radius: 4px;
     overflow: hidden;
@@ -42,7 +42,7 @@ build_html = \
   }}
 </style>
 <div class="card">
-  <img src={0} alt="Image" class="center">
+  <img src="{0}" alt="Image" class="center">
   <div class="card_item">
     <h5>{1}</h5>
     <h4><b>{2}</b></h4> 
